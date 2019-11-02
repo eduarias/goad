@@ -35,7 +35,7 @@ func NewRequest(method, url string, body io.Reader) (*Request, error) {
 		WroteRequest:         func(wri httptrace.WroteRequestInfo) { m.RequestWriteTime = time.Since(m.StartTime) },
 		GotFirstResponseByte: func() { m.FirstResponseByteTime = time.Since(m.StartTime) },
 	}
-
+	req.Close = true // closes file descriptor but prevent TCP to reuse connection
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 	return &Request{req, m}, err
 }
