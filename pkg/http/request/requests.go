@@ -1,6 +1,7 @@
 package request
 
 import (
+	"context"
 	"crypto/tls"
 	"io"
 	"net/http"
@@ -14,10 +15,10 @@ type Request struct {
 	Metrics *Metrics
 }
 
-// NewRequest returns a new request structure with performance metrics
-func NewRequest(method, url string, body io.Reader) (*Request, error) {
+// NewRequestWithContext returns an standard http request powered by metrics
+func NewRequestWithContext(ctx context.Context, method, url string, body io.Reader) (*Request, error) {
 	var dnsStart, connDialStart, tlsStart time.Time
-	req, err := http.NewRequest(method, url, body)
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	m := &Metrics{}
 
 	trace := &httptrace.ClientTrace{
@@ -38,4 +39,9 @@ func NewRequest(method, url string, body io.Reader) (*Request, error) {
 	req.Close = true // closes file descriptor but prevent TCP to reuse connection
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 	return &Request{req, m}, err
+}
+
+// NewRequest wraps NewRequestWithContext using the background context.
+func NewRequest(method, url string, body io.Reader) (*Request, error) {
+	return NewRequestWithContext(context.Background(), method, url, body)
 }
