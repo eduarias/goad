@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -34,12 +33,16 @@ func TestDoInstrumentationHTTP(t *testing.T) {
 	client := Client{}
 	resp, err := client.Do(req)
 
-	m := client.Metrics
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.NotNil(t, m.InitTime)
-	assert.InDelta(t, time.Now().Unix(), m.InitTime.Unix(), 1)
-	hasDuration(t, m.ElapsedTime)
+	validateClientMetric(t, client.Metrics)
+}
+
+func TestDoInstrumentationError(t *testing.T) {
+	req, err := NewRequest("GET", "http://localhost:9999", nil)
+	client := Client{}
+	_, err = client.Do(req)
+	assert.Error(t, err)
 }
 
 func TestGetInstrumentation(t *testing.T) {
@@ -48,7 +51,22 @@ func TestGetInstrumentation(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	_, _ = Get(ts.URL)
+	resp, err := Get(ts.URL)
 
-	// TODO - Get metrics for this request, right now has no asserts
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	validateResponseMetric(t, resp.Metrics)
+}
+
+func TestPostInstrumentation(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Hi")
+	}))
+	defer ts.Close()
+
+	resp, err := Post(ts.URL, "", nil)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	validateResponseMetric(t, resp.Metrics)
 }

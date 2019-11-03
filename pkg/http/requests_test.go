@@ -29,9 +29,3 @@ func TestNewRequest(t *testing.T) {
 	hasDuration(t, m.FirstResponseByteTime)
 	assert.NotEmpty(t, m.HostPort)
 }
-
-func hasDuration(t *testing.T, duration time.Duration) {
-	assert.NotNil(t, duration)
-	assert.NotZero(t, duration.Nanoseconds())
-	assert.InDelta(t, 0, duration.Milliseconds(), 100)
-}

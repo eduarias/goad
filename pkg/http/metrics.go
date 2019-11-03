@@ -18,3 +18,9 @@ type ClientMetrics struct {
 	InitTime    time.Time
 	ElapsedTime time.Duration
 }
+
+// ResponseMetrics includes all metrics taken in previous steps
+type ResponseMetrics struct {
+	*RequestMetrics
+	*ClientMetrics
+}
