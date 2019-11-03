@@ -58,6 +58,13 @@ func TestGetInstrumentation(t *testing.T) {
 	validateResponseMetric(t, resp.Metrics)
 }
 
+func TestGetInstrumentationError(t *testing.T) {
+	c := DefaultClient
+	_, err := c.Get("http://localhost:9999")
+
+	assert.Error(t, err)
+}
+
 func TestPostInstrumentation(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Hi")
@@ -69,4 +76,11 @@ func TestPostInstrumentation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	validateResponseMetric(t, resp.Metrics)
+}
+
+func TestPostInstrumentationError(t *testing.T) {
+	c := DefaultClient
+	_, err := c.Post("http://localhost:9999", "", nil)
+
+	assert.Error(t, err)
 }
