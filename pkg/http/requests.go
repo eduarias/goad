@@ -1,4 +1,4 @@
-package request
+package httpinstrumented
 
 import (
 	"context"
@@ -12,14 +12,14 @@ import (
 // Request defines a requests with performance metrics
 type Request struct {
 	*http.Request
-	Metrics *Metrics
+	Metrics *RequestMetrics
 }
 
 // NewRequestWithContext returns an standard http request powered by metrics
 func NewRequestWithContext(ctx context.Context, method, url string, body io.Reader) (*Request, error) {
 	var dnsStart, connDialStart, tlsStart time.Time
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
-	m := &Metrics{}
+	m := &RequestMetrics{}
 
 	trace := &httptrace.ClientTrace{
 		GetConn: func(hostPort string) {

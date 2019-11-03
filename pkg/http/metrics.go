@@ -1,9 +1,9 @@
-package request
+package httpinstrumented
 
 import "time"
 
-// Metrics defines request measures
-type Metrics struct {
+// RequestMetrics defines request measures
+type RequestMetrics struct {
 	StartTime             time.Time
 	DNSTime               time.Duration
 	TCPDialTime           time.Duration
@@ -11,4 +11,10 @@ type Metrics struct {
 	RequestWriteTime      time.Duration
 	FirstResponseByteTime time.Duration
 	HostPort              string
+}
+
+// ClientMetrics contains measures at client level
+type ClientMetrics struct {
+	InitTime    time.Time
+	ElapsedTime time.Duration
 }
