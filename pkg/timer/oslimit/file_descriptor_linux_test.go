@@ -20,5 +20,5 @@ func TestSetMaxFileDescriptors(t *testing.T) {
 
 	fdFinal, _ := GetOSSimultaneousFileDescriptors()
 	assert.NoError(t, err)
-	assert.Greater(t, fdFinal, fdInit)
+	assert.GreaterOrEqual(t, fdFinal, fdInit)
 }
