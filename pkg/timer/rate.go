@@ -7,14 +7,15 @@ import (
 	"time"
 )
 
-type inserter interface {
+// RateController ...
+type RateController interface {
 	calculateTokens(from, to time.Time) float64
 	Delay() time.Duration
 }
 
 // Limiter ...
 type Limiter struct {
-	inserter inserter
+	inserter RateController
 	burst    int
 
 	mu     sync.Mutex
@@ -24,7 +25,7 @@ type Limiter struct {
 }
 
 // NewLimiter ...
-func NewLimiter(b int, inserter inserter) *Limiter {
+func NewLimiter(b int, inserter RateController) *Limiter {
 	return &Limiter{
 		inserter: inserter,
 		burst:    b,
@@ -33,8 +34,14 @@ func NewLimiter(b int, inserter inserter) *Limiter {
 
 func (lim *Limiter) update() {
 	lim.mu.Lock()
-	lim.inserter.calculateTokens(lim.last, time.Now())
-	lim.mu.Unlock()
+	defer lim.mu.Unlock()
+
+	newTokens := lim.inserter.calculateTokens(lim.last, time.Now())
+	if lim.tokens+newTokens >= float64(lim.burst) {
+		lim.tokens = float64(lim.burst)
+	} else {
+		lim.tokens += newTokens
+	}
 }
 
 // Wait ...
