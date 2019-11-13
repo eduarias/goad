@@ -19,6 +19,9 @@ func (lr *LinearRate) calculateTokens(from, to time.Time) float64 {
 }
 
 // Delay ...
-func (lr *LinearRate) Delay() time.Duration {
-	return time.Duration(0)
+func (lr *LinearRate) Delay(neededTokens float64) time.Duration {
+	if neededTokens <= 0 {
+		return time.Duration(0)
+	}
+	return time.Duration(neededTokens/lr.rate) * time.Second
 }

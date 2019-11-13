@@ -7,15 +7,15 @@ import (
 	"time"
 )
 
-// RateController ...
-type RateController interface {
+// RateLimiter ...
+type RateLimiter interface {
 	calculateTokens(from, to time.Time) float64
-	Delay() time.Duration
+	Delay(neededTokens float64) time.Duration
 }
 
 // Limiter ...
 type Limiter struct {
-	inserter RateController
+	inserter RateLimiter
 	burst    int
 
 	mu     sync.Mutex
@@ -25,7 +25,7 @@ type Limiter struct {
 }
 
 // NewLimiter ...
-func NewLimiter(b int, inserter RateController) *Limiter {
+func NewLimiter(b int, inserter RateLimiter) *Limiter {
 	return &Limiter{
 		inserter: inserter,
 		burst:    b,
@@ -64,7 +64,7 @@ func (lim *Limiter) WaitN(ctx context.Context, n int) (err error) {
 		return nil
 	}
 
-	delay := lim.inserter.Delay()
+	delay := lim.inserter.Delay(float64(n) - lim.tokens)
 	if delay == 0 {
 		return nil
 	}
@@ -80,5 +80,4 @@ func (lim *Limiter) WaitN(ctx context.Context, n int) (err error) {
 		// reservation, which may permit other events to proceed sooner.
 		return ctx.Err()
 	}
-
 }
